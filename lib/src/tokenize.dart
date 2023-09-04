@@ -1,26 +1,21 @@
-import 'package:dolumns/dolumns.dart';
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/error/listener.dart';
 import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/string_source.dart';
-// this is supposed to be private but for example we import it
+// NOTE: this is a private package and we are doing a transitive import through the analyzer
+//       though for the sake of an exploration, it doesn't harm
 import 'package:_fe_analyzer_shared/src/scanner/reader.dart';
-
-import '../samples/samples.dart';
-
-void main() {
-  printTokens();
-}
+import 'package:_fe_analyzer_shared/src/scanner/token.dart';
 
 // Using Dart Scanner (ie Lexer) to tokenize the sample code
 //
 // note: apparently if the curly bracket is missing, there'll be an error and somehow the brakcet is added to the tokens
 //       but removing a semicolon won't show an error and it won't be added
-void printTokens() {
+List<Token> tokenize(String code) {
   final featureSet = FeatureSet.latestLanguageVersion();
   // from parseString
-  var source = StringSource(sample_1, '');
-  var reader = CharSequenceReader(sample_1);
+  var source = StringSource(code, '');
+  var reader = CharSequenceReader(code);
   var errorCollector = RecordingErrorListener();
 
   // from docs:
@@ -38,14 +33,11 @@ void printTokens() {
       featureSet: featureSet,
     );
   var token = scanner.tokenize();
-  final table = [
-    ['token', 'token type']
-  ];
+  final tokens = <Token>[];
+
   do {
-    table.add([token.toString(), token.type.toString()]);
+    tokens.add(token);
     token = token.next!;
   } while (!token.isEof);
-  table.add([token.toString(), token.type.toString()]);
-
-  print(dolumnify(table));
+  return tokens;
 }
